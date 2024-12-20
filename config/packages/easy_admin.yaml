@@ -1,0 +1,7 @@
+easy_admin:
+  design:
+    assets:
+      css:
+        - css/easyadmin.css
+      js:
+        - js/custom.js

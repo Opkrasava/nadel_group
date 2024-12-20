@@ -1,0 +1,17 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content %}
+
+    {% for entry in history %}
+        <div>
+            {{ entry.changedAt|date('Y-m-d H:i:s') }} : {{ entry.description }}
+        </div>
+        <br>
+    {% else %}
+        <div>
+            <span>История отсутствует</span>
+        </div>
+    {% endfor %}
+
+
+{% endblock %}
