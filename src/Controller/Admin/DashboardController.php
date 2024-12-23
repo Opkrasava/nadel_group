@@ -6,6 +6,7 @@ use App\Entity\Categories;
 use App\Entity\Products;
 use App\Entity\Recipes;
 use App\Entity\UnitMeasurement;
+use App\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
@@ -47,5 +48,8 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Products', 'fa fa-box', Products::class);
         yield MenuItem::linkToCrud('UnitMeasurement', 'fa fa-ruler', UnitMeasurement::class);
         yield MenuItem::linkToCrud('Recipes', 'fa fa-book', Recipes::class);
+        if ($this->isGranted('ROLE_ADMIN')) {
+            yield MenuItem::linkToCrud('Users', 'fa fa-users', User::class);
+        }
     }
 }
