@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\ProductRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
@@ -23,11 +24,11 @@ class Products
     #[ORM\Column(length: 50)]
     private ?string $product_sku = null;
 
-    #[ORM\Column]
-    private ?int $cost = null;
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: false)]
+    private ?string $cost = null;
 
-    #[ORM\Column]
-    private ?int $quantity = null;
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: false)]
+    private ?string $quantity = null;
 
     #[ORM\ManyToOne(targetEntity: UnitMeasurement::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -74,24 +75,24 @@ class Products
         return $this;
     }
 
-    public function getCost(): ?int
+    public function getCost(): ?string
     {
         return $this->cost;
     }
 
-    public function setCost(int $cost): static
+    public function setCost(?string $cost): static
     {
         $this->cost = $cost;
 
         return $this;
     }
 
-    public function getQuantity(): ?int
+    public function getQuantity(): ?string
     {
         return $this->quantity;
     }
 
-    public function setQuantity(int $quantity): static
+    public function setQuantity(?string $quantity): static
     {
         $this->quantity = $quantity;
 
