@@ -10,6 +10,7 @@ use App\Form\RecipeProductType;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
@@ -17,8 +18,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use http\Env\Request;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -99,22 +102,26 @@ class RecipesCrudController extends AbstractCrudController
         $entityManager->flush();
     }
 
-    public function confirmRecipe(AdminContext $context, AdminUrlGenerator $adminUrlGenerator, EntityManagerInterface $entityManager): RedirectResponse
+    public function confirmRecipe(AdminContext $context, AdminUrlGenerator $adminUrlGenerator, EntityManagerInterface $entityManager, \Symfony\Component\HttpFoundation\Request $request): RedirectResponse
     {
         $recipe = $context->getEntity()->getInstance();
 
         if ($recipe instanceof Recipes) {
             $insufficientProducts = []; // Продукты с недостаточным количеством
 
-            // Берём данные продуктов из базы
+            // Получаем данные из формы
+            $unit = (float) $request->request->get('recipe_unit'); // Берём unit из POST-запроса
+            $recipe->setUnit($unit);
+
+            // Проверяем доступность продуктов
             foreach ($recipe->getRecipeProducts() as $recipeProduct) {
                 $product = $recipeProduct->getProduct();
-                $requiredQuantity = $recipeProduct->getQuantity();
+                $requiredQuantity = $recipeProduct->getQuantity() * $unit; // Умножаем на unit
                 $availableQuantity = $product->getQuantity();
 
                 if ($availableQuantity < $requiredQuantity) {
                     $insufficientProducts[] = sprintf(
-                        '%s (Требуется: %d, Доступно: %d)',
+                        '%s (Требуется: %.2f, Доступно: %.2f)',
                         $product->getName(),
                         $requiredQuantity,
                         $availableQuantity
@@ -122,7 +129,7 @@ class RecipesCrudController extends AbstractCrudController
                 }
             }
 
-            // Если недостаточно продуктов, отклоняем подтверждение
+            // Если недостаточно продуктов
             if (!empty($insufficientProducts)) {
                 $this->addFlash('danger', sprintf(
                     'Невозможно подтвердить рецепт "%s". Недостаточно следующих продуктов: %s',
@@ -136,24 +143,24 @@ class RecipesCrudController extends AbstractCrudController
                     ->generateUrl());
             }
 
-            // Списываем количество у продуктов
+            // Списываем продукты
             $changes = [];
             foreach ($recipe->getRecipeProducts() as $recipeProduct) {
                 $product = $recipeProduct->getProduct();
-                $requiredQuantity = $recipeProduct->getQuantity();
+                $requiredQuantity = $recipeProduct->getQuantity() * $unit; // Умножаем на unit
 
                 $product->setQuantity($product->getQuantity() - $requiredQuantity);
                 $entityManager->persist($product);
 
                 $changes[] = sprintf(
-                    'Продукт "%s" списан в количестве %d. Остаток: %d',
+                    'Продукт "%s" списан в количестве %.2f. Остаток: %.2f',
                     $product->getName(),
                     $requiredQuantity,
                     $product->getQuantity()
                 );
             }
 
-            // Записываем изменения в историю
+            // Записываем историю изменений
             foreach ($changes as $change) {
                 $history = new RecipeHistory();
                 $history->setRecipe($recipe)
@@ -162,7 +169,7 @@ class RecipesCrudController extends AbstractCrudController
                 $entityManager->persist($history);
             }
 
-            // Устанавливаем статус рецепта
+            // Обновляем статус рецепта
             $recipe->setStatus(Recipes::STATUS_CONFIRMED);
             $entityManager->persist($recipe);
             $entityManager->flush();
@@ -172,6 +179,7 @@ class RecipesCrudController extends AbstractCrudController
 
         return new RedirectResponse($adminUrlGenerator->setController(self::class)->setAction('index')->generateUrl());
     }
+
 
     public function viewRecipe(AdminContext $context, EntityManagerInterface $entityManager, AdminUrlGenerator $adminUrlGenerator): Response
     {
@@ -203,10 +211,12 @@ class RecipesCrudController extends AbstractCrudController
         // Кнопка "Подтвердить"
         $confirmAction = Action::new('confirm', 'Подтвердить')
             ->linkToCrudAction('confirmRecipe') // Связываем с методом контроллера
-            ->setCssClass('btn btn-success') // CSS-класс для кнопки
-            ->displayIf(function ($entity) {
-                return $entity->getStatus() === Recipes::STATUS_CREATED; // Показывать, только если статус "Созданный"
-            });
+            ->setHtmlAttributes([
+                'type' => 'submit',               // Делаем кнопку отправкой формы
+                'form' => 'edit-form',            // Привязываем к форме с id="edit-form"
+                'class' => 'btn btn-success'      // Добавляем стиль
+            ])
+            ->setCssClass('btn btn-success js-confirm-action'); // CSS-класс для кнопки
 
         // Кнопка "Просмотр"
         $viewAction = Action::new('view', 'История')
@@ -224,12 +234,22 @@ class RecipesCrudController extends AbstractCrudController
         return Recipes::class;
     }
 
+    public function configureAssets(Assets $assets): Assets
+    {
+        return $assets
+            ->addJsFile('js/confirm.js'); // Путь относительно папки public
+    }
+
     public function configureFields(string $pageName): iterable
     {
         return [
             TextField::new('name', 'Recipe Name'),
             TextField::new('recipe_sku', 'Recipe SKU')
                 ->setHelp('Оставьте пустым для автогенерации.'),
+            NumberField::new('unit', 'Unit')
+                ->setNumDecimals(2) // Две цифры после запятой
+                ->setHelp('Введите значение с точностью до сотых.')
+                ->setRequired(false), // Необязательное поле
             TextField::new('productNames', 'Products') // Используем метод getProductNames
             ->onlyOnIndex() // Отображается только в списке
             ->addCssClass('products-column'), // Добавляем кастомный CSS-класс

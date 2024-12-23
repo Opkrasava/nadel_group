@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\RecipesRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: RecipesRepository::class)]
@@ -12,6 +13,9 @@ class Recipes
 {
     public const STATUS_CREATED = 1;
     public const STATUS_CONFIRMED = 2;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $unit = null;
 
     #[ORM\Column(type: 'integer')]
     private int $status = self::STATUS_CREATED; // По умолчанию статус "созданный"
@@ -55,6 +59,17 @@ class Recipes
 
         // Если подходящий SKU не найден, возвращаем стандартное значение
         return 'DEFAULT-SKU';
+    }
+
+    public function getUnit(): ?string
+    {
+        return $this->unit;
+    }
+
+    public function setUnit(?string $unit): self
+    {
+        $this->unit = $unit;
+        return $this;
     }
 
     public function getId(): ?int
