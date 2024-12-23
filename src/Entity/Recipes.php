@@ -18,7 +18,7 @@ class Recipes
     private ?string $comment = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
-    private ?string $unit = null;
+    private ?string $unit = '1.00';
 
     #[ORM\Column(type: 'integer')]
     private int $status = self::STATUS_CREATED; // По умолчанию статус "созданный"

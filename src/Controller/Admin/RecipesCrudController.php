@@ -113,7 +113,7 @@ class RecipesCrudController extends AbstractCrudController
 
             // Получаем данные из формы
             $unit = (float) $request->request->get('recipe_unit'); // Берём unit из POST-запроса
-            $recipe->setUnit($unit);
+            //$recipe->setUnit($unit);
 
             // Проверяем доступность продуктов
             foreach ($recipe->getRecipeProducts() as $recipeProduct) {
@@ -253,7 +253,8 @@ class RecipesCrudController extends AbstractCrudController
             NumberField::new('unit', 'Unit')
                 ->setNumDecimals(2) // Две цифры после запятой
                 ->setHelp('Введите значение с точностью до сотых.')
-                ->setRequired(false), // Необязательное поле
+                ->setRequired(false) // Необязательное поле
+                ->setFormTypeOption('data', 1.00), // Устанавливаем дефолтное значение
             TextField::new('comment', 'Comment') // Добавляем поле комментария
             ->setRequired(false)
                 ->setHelp('Добавьте комментарий к рецепту.'),
