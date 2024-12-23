@@ -26,6 +26,20 @@ use Symfony\Component\HttpFoundation\Response;
 class RecipesCrudController extends AbstractCrudController
 {
 
+    public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        if (!$entityInstance instanceof Recipes) {
+            return;
+        }
+
+        // Генерация SKU, если его нет
+        if (empty($entityInstance->getRecipeSku())) {
+            $entityInstance->setRecipeSku($entityInstance->generateSku());
+        }
+
+        parent::persistEntity($entityManager, $entityInstance);
+    }
+
     public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
         if (!$entityInstance instanceof Recipes) {
@@ -214,7 +228,8 @@ class RecipesCrudController extends AbstractCrudController
     {
         return [
             TextField::new('name', 'Recipe Name'),
-            TextField::new('recipe_sku', 'Recipe SKU'),
+            TextField::new('recipe_sku', 'Recipe SKU')
+                ->setHelp('Оставьте пустым для автогенерации.'),
             TextField::new('productNames', 'Products') // Используем метод getProductNames
             ->onlyOnIndex() // Отображается только в списке
             ->addCssClass('products-column'), // Добавляем кастомный CSS-класс

@@ -24,7 +24,7 @@ class Recipes
     #[ORM\Column(length: 100)]
     private ?string $name = null;
 
-    #[ORM\Column(length: 30)]
+    #[ORM\Column(length: 30, nullable: true)]
     private ?string $recipe_sku = null;
 
     #[ORM\OneToMany(mappedBy: 'recipe', targetEntity: RecipeProduct::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -33,6 +33,28 @@ class Recipes
     public function __construct()
     {
         $this->recipeProducts = new ArrayCollection();
+    }
+
+    public function generateSku(): string
+    {
+        // Если SKU уже заполнено, возвращаем его
+        if (!empty($this->recipe_sku)) {
+            return $this->recipe_sku;
+        }
+
+        // Проверяем связанные продукты
+        /** @var RecipeProduct $recipeProduct */
+        foreach ($this->getRecipeProducts() as $recipeProduct) {
+            $product_sku = $recipeProduct->getProduct()->getProductSku();
+
+            // Ищем SKU, который начинается с "10"
+            if (strpos($product_sku, '10') === 0) {
+                return $product_sku;
+            }
+        }
+
+        // Если подходящий SKU не найден, возвращаем стандартное значение
+        return 'DEFAULT-SKU';
     }
 
     public function getId(): ?int
