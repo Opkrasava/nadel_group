@@ -1,7 +1,8 @@
-FROM php:8.2-cli
+FROM php:8.2-fpm
 
 # Установить зависимости
 RUN apt-get update && apt-get install -y \
+    nano \
     git \
     unzip \
     libzip-dev \
@@ -19,9 +20,8 @@ RUN curl -sS https://get.symfony.com/cli/installer | bash \
 # Установить рабочую директорию
 WORKDIR /app
 
-
 # Копируем файлы проекта
 COPY . /app
 
-# Запуск Symfony сервера
-CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
+# Убедитесь, что PHP-FPM запускается
+CMD ["php-fpm"]
