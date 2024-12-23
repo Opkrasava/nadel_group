@@ -73,4 +73,10 @@ class RecipeProduct
             $this->getQuantity() ?? 0
         );
     }
+
+    public function getUnitMeasurement(): ?UnitMeasurement
+    {
+        // Получаем unit_measurement из связанного продукта
+        return $this->getProduct()->getUnitMeasurement();
+    }
 }

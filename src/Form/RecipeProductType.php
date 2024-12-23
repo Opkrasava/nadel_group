@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Products;
 use App\Entity\RecipeProduct;
+use App\Entity\UnitMeasurement;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -25,6 +26,11 @@ class RecipeProductType extends AbstractType
             ])
             ->add('quantity', IntegerType::class, [
                 'label' => 'Quantity',          // Название поля количества
+            ])
+            ->add('unitMeasurement', EntityType::class, [
+                'class' => unitMeasurement::class,       // Указываем класс сущности Product
+                'label' => 'unitMeasurement',          // Название поля количества
+                'disabled' => true,
             ]);
     }
 
