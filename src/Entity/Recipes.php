@@ -14,6 +14,9 @@ class Recipes
     public const STATUS_CREATED = 1;
     public const STATUS_CONFIRMED = 2;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $comment = null;
+
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $unit = null;
 
@@ -59,6 +62,18 @@ class Recipes
 
         // Если подходящий SKU не найден, возвращаем стандартное значение
         return 'DEFAULT-SKU';
+    }
+
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+// Сеттер
+    public function setComment(?string $comment): self
+    {
+        $this->comment = $comment;
+        return $this;
     }
 
     public function getUnit(): ?string

@@ -19,6 +19,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use http\Env\Request;
@@ -104,6 +105,7 @@ class RecipesCrudController extends AbstractCrudController
 
     public function confirmRecipe(AdminContext $context, AdminUrlGenerator $adminUrlGenerator, EntityManagerInterface $entityManager, \Symfony\Component\HttpFoundation\Request $request): RedirectResponse
     {
+        $user = $this->getUser();
         $recipe = $context->getEntity()->getInstance();
 
         if ($recipe instanceof Recipes) {
@@ -153,7 +155,9 @@ class RecipesCrudController extends AbstractCrudController
                 $entityManager->persist($product);
 
                 $changes[] = sprintf(
-                    'Продукт "%s" списан в количестве %.2f. Остаток: %.2f',
+                    '%s (%s): Продукт "%s" списан в количестве %.2f. Остаток: %.2f',
+                    $user->getUserIdentifier(),
+                    $recipe->getComment(),
                     $product->getName(),
                     $requiredQuantity,
                     $product->getQuantity()
@@ -250,6 +254,9 @@ class RecipesCrudController extends AbstractCrudController
                 ->setNumDecimals(2) // Две цифры после запятой
                 ->setHelp('Введите значение с точностью до сотых.')
                 ->setRequired(false), // Необязательное поле
+            TextField::new('comment', 'Comment') // Добавляем поле комментария
+            ->setRequired(false)
+                ->setHelp('Добавьте комментарий к рецепту.'),
             TextField::new('productNames', 'Products') // Используем метод getProductNames
             ->onlyOnIndex() // Отображается только в списке
             ->addCssClass('products-column'), // Добавляем кастомный CSS-класс
