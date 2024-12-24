@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            const unitValue = unitInput.value;
+            const unitValue = Math.abs(unitInput.value);
             const commentValue = comment.value;
 
             // Убираем предупреждение об изменениях в форме
