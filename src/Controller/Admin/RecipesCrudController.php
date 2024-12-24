@@ -255,7 +255,8 @@ class RecipesCrudController extends AbstractCrudController
                 ->setNumDecimals(2) // Две цифры после запятой
                 ->setHelp('Введите значение с точностью до сотых.')
                 ->setRequired(false) // Необязательное поле
-                ->setFormTypeOption('data', 1.00), // Устанавливаем дефолтное значение
+                ->setFormTypeOption('data', 1.00) // Устанавливаем дефолтное значение
+                ->setFormTypeOption('attr', ['min' => 0]), // Ограничение в форме
             TextField::new('comment', 'Comment') // Добавляем поле комментария
             ->setRequired(false)
                 ->setHelp('Добавьте комментарий к рецепту.'),

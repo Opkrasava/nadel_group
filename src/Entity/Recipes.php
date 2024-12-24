@@ -7,8 +7,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: RecipesRepository::class)]
+#[UniqueEntity(fields: ['recipe_sku'], message: 'Этот SKU уже существует.')] // Валидация на уникальность
 class Recipes
 {
     public const STATUS_CREATED = 1;
@@ -18,6 +21,8 @@ class Recipes
     private ?string $comment = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[Assert\NotBlank]               // Поле не может быть пустым
+    #[Assert\GreaterThanOrEqual(0)]  // Значение должно быть >= 0
     private ?string $unit = '1.00';
 
     #[ORM\Column(type: 'integer')]

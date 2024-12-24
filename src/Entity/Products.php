@@ -5,8 +5,11 @@ namespace App\Entity;
 use App\Repository\ProductRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
+#[UniqueEntity(fields: ['product_sku'], message: 'Этот SKU уже существует.')] // Валидация на уникальность
 class Products
 {
     #[ORM\Id]
@@ -25,9 +28,13 @@ class Products
     private ?string $product_sku = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: false)]
+    #[Assert\NotBlank]               // Поле не может быть пустым
+    #[Assert\GreaterThanOrEqual(0)]  // Значение должно быть >= 0
     private ?string $cost = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: false)]
+    #[Assert\NotBlank]
+    #[Assert\GreaterThanOrEqual(0)]
     private ?string $quantity = null;
 
     #[ORM\ManyToOne(targetEntity: UnitMeasurement::class)]

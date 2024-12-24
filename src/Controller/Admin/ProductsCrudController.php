@@ -24,8 +24,10 @@ class ProductsCrudController extends AbstractCrudController
                 return $entity->getCategory()->getName(); // Отображаем имя категории
             }),
             TextField::new('productSku', 'SKU'),
-            NumberField::new('cost', 'Cost'),
-            NumberField::new('quantity', 'Quantity'),
+            NumberField::new('cost', 'Cost')
+                ->setFormTypeOption('attr', ['min' => 0]), // Ограничение в форме
+            NumberField::new('quantity', 'Quantity')
+                ->setFormTypeOption('attr', ['min' => 0]), // Ограничение в форме,
             AssociationField::new('unitMeasurement', 'Unit Measurement')->formatValue(function ($value, $entity) {
                 return $entity->getUnitMeasurement()->getName();
             }),

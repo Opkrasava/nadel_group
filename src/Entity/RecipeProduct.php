@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\RecipeProductRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RecipeProductRepository::class)]
 class RecipeProduct
@@ -21,8 +22,10 @@ class RecipeProduct
     #[ORM\JoinColumn(nullable: false)]
     private $product;
 
-    #[ORM\Column(type: 'integer')]
-    private $quantity;
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)] // Изменили на decimal с 2 знаками после запятой
+    #[Assert\NotBlank]               // Поле не может быть пустым
+    #[Assert\GreaterThanOrEqual(0)]  // Значение должно быть >= 0
+    private float $quantity = 0.00;
 
     public function getId(): ?int
     {
@@ -53,12 +56,12 @@ class RecipeProduct
         return $this;
     }
 
-    public function getQuantity(): ?int
+    public function getQuantity(): ?float
     {
         return $this->quantity;
     }
 
-    public function setQuantity(int $quantity): self
+    public function setQuantity(float $quantity): self
     {
         $this->quantity = $quantity;
 
@@ -68,10 +71,14 @@ class RecipeProduct
     public function __toString(): string
     {
         return sprintf(
+            '%s',
+            $this->getProduct() ? $this->getProduct()->getName() : 'Unknown Product'
+        );
+/*        return sprintf(
             '%s (Quantity: %d)',
             $this->getProduct() ? $this->getProduct()->getName() : 'Unknown Product',
             $this->getQuantity() ?? 0
-        );
+        );*/
     }
 
     public function getUnitMeasurement(): ?UnitMeasurement
