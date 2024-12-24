@@ -113,6 +113,7 @@ class RecipesCrudController extends AbstractCrudController
 
             // Получаем данные из формы
             $unit = (float) $request->request->get('recipe_unit'); // Берём unit из POST-запроса
+            $comment = $request->request->get('comment'); // Берём unit из POST-запроса
             //$recipe->setUnit($unit);
 
             // Проверяем доступность продуктов
@@ -157,7 +158,7 @@ class RecipesCrudController extends AbstractCrudController
                 $changes[] = sprintf(
                     '%s (%s): Продукт "%s" списан в количестве %.2f. Остаток: %.2f',
                     $user->getUserIdentifier(),
-                    $recipe->getComment(),
+                    $comment,
                     $product->getName(),
                     $requiredQuantity,
                     $product->getQuantity()
