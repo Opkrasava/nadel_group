@@ -155,7 +155,7 @@ class RecipesCrudController extends AbstractCrudController
                 $entityManager->persist($product);
 
                 $changes[] = sprintf(
-                    '%s (%s)): Продукт "%s" списан в количестве %.2f. Остаток: %.2f',
+                    '%s (%s): Продукт "%s" списан в количестве %.2f. Остаток: %.2f',
                     $user->getUserIdentifier(),
                     $recipe->getComment(),
                     $product->getName(),
